@@ -26,33 +26,65 @@ The project is organized into the following files:
 
 ## Setup and Usage
 
-1.  **Clone the repository:**
+Para ejecutar el script de forma diaria en un servidor, puedes utilizar una instancia EC2 de AWS. Aquí tienes los pasos básicos:
+
+1.  **Lanzar una instancia EC2:**
+    *   Selecciona una AMI (Amazon Machine Image) basada en Linux (ej. Ubuntu).
+    *   Elige un tipo de instancia adecuado (t2.micro es suficiente para este script).
+    *   Configura el grupo de seguridad para permitir la conexión SSH (puerto 22).
+2.  **Conectarse a la instancia EC2 mediante SSH:**
     ```bash
-    git clone [Repository URL]
-    cd [project directory name]
+    ssh -i "tu_clave_privada.pem" ubuntu@tu_ip_publica
     ```
-2.  **Install dependencies:**
+3.  **Instalar Python y pip:**
     ```bash
-    pip install -r requirements.txt
+    sudo apt update
+    sudo apt install python3 python3-pip
     ```
-3.  **Create a `twilio_config.py` file (Do NOT upload to GitHub):**
-    *   In this file, define the following variables with your credentials:
-        ```python
-        TWILIO_ACCOUNT_SID = 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' 
-        TWILIO_AUTH_TOKEN = 'your_auth_token'  
-        PHONE_NUMBER = '+1234567890'  
-        API_KEY_WAPI = 'your_api_key_weather' 
-       ```
-4.  **Run the script:**
+4.  **Clonar el repositorio:**
     ```bash
-    python twilio_script.py
+    git clone [URL del repositorio]
+    cd [nombre del directorio del proyecto]
     ```
+5.  **Instalar las dependencias:**
+    ```bash
+    pip3 install -r requirements.txt
+    ```
+6.  **Configurar las variables de entorno:**
+     ```bash
+       export TWILIO_ACCOUNT_SID="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        export TWILIO_AUTH_TOKEN="your_auth_token"
+        export PHONE_NUMBER="+1234567890"
+        export API_KEY_WAPI="your_api_key_weather"
+     ```
+    *   (Reemplaza los valores con tus credenciales).
+    *   Para hacer persistentes las variables, considera agregarlas a `~/.bashrc` o `~/.bash_profile`.
+7.  **Crear un script ejecutable:**
+    *   Crea un archivo llamado `run_script.sh`:
+        ```bash
+        #!/bin/bash
+        python3 /path/to/your/twilio_script.py
+        ```
+    *   (Reemplaza `/path/to/your/twilio_script.py` con la ruta correcta).
+    *   Dale permisos de ejecución al script:
+        ```bash
+        chmod +x run_script.sh
+        ```
+8.  **Programar la ejecución del script con cron:**
+    *   Abre el crontab:
+        ```bash
+        crontab -e
+        ```
+    *   Añade una línea para ejecutar el script diariamente a una hora específica (ej. a las 8 AM):
+        ```
+        0 8 * * * /path/to/your/run_script.sh
+        ```
+    *   (Reemplaza `/path/to/your/run_script.sh` con la ruta correcta y ajusta la hora si es necesario).
 
-The script will send an SMS message with the weather forecast for Mendoza for the current day.
+## Notas Adicionales
 
-**Important:**
-
-*   **Security:** Never include your credentials in the repository. Use environment variables or a `.env` file (and remember to add it to `.gitignore`).
-*   **API Key:** Get a free API key at [WeatherAPI](https://www.weatherapi.com/).
-*   **Location:** The default city is Mendoza. To change it, modify the `query` variable in `twilio_script.py`.
-
+*   **Seguridad:** Nunca subas tus credenciales (Twilio SID, token y API key) directamente a GitHub. Utiliza variables de entorno para gestionarlas de manera segura.
+*   **API Key:** Obtén una API Key gratuita en [WeatherAPI](https://www.weatherapi.com/).
+*   **Flexibilidad:** El código está diseñado para ser fácilmente adaptable a otras ubicaciones. Simplemente modifica el valor de la variable `query` en el archivo `twilio_script.py` si lo deseas.
+*   **Limitaciones:**  Esta version del script solo consulta el pronostico para 1 dia.
+*   **AWS EC2:** Los pasos proporcionados para AWS EC2 son básicos. Ajusta la configuración de la instancia y las reglas de seguridad según tus necesidades.
